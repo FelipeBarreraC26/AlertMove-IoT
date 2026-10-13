@@ -47,7 +47,7 @@ class DashboardActivity : AppCompatActivity() {
         val tvTituloPanel = findViewById<TextView>(R.id.tvTituloPanel)
         
         // Cargar configuración de privacidad y mostrar título del panel
-        viewModel.cargarConfiguracionDueño(viewModel.activeOwnerUid) { mostrarCorreo ->
+        viewModel.cargarConfiguracionCompleta(viewModel.activeOwnerUid) { mostrarCorreo, _ ->
             tvTituloPanel.text = viewModel.getHomeTitle(mostrarCorreo)
         }
 
@@ -73,9 +73,21 @@ class DashboardActivity : AppCompatActivity() {
             intent.removeExtra("ABRIR_HISTORIAL")
         }
 
-        // Observar dispositivos IoT registrados estrictamente por ownerUid
-        viewModel.observarDispositivos { devices ->
-            actualizarListaDispositivos(devices)
+        // Cargar configuración completa para validar permisos de gestión del invitado
+        viewModel.cargarConfiguracionCompleta(viewModel.activeOwnerUid) { _, permitirGestion ->
+            val esInvitado = viewModel.viewingSharedHome
+            val puedeGestionar = !esInvitado || permitirGestion
+
+            if (puedeGestionar) {
+                btnRegistrarDispositivo.visibility = View.VISIBLE
+            } else {
+                btnRegistrarDispositivo.visibility = View.GONE
+            }
+
+            // Observar dispositivos IoT registrados estrictamente por ownerUid
+            viewModel.observarDispositivos { devices ->
+                actualizarListaDispositivos(devices, puedeGestionar)
+            }
         }
 
         // Registrar Nuevo Dispositivo IoT
@@ -159,12 +171,11 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun esMacValida(mac: String): Boolean {
-        // Formato estándar MAC: XX:XX:XX:XX:XX:XX
         val macRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".toRegex()
         return mac.matches(macRegex)
     }
 
-    private fun actualizarListaDispositivos(devices: List<IoTDevice>) {
+    private fun actualizarListaDispositivos(devices: List<IoTDevice>, puedeGestionar: Boolean) {
         val contenedor = findViewById<LinearLayout>(R.id.layoutContenedorDispositivos)
         contenedor.removeAllViews()
 
@@ -193,7 +204,7 @@ class DashboardActivity : AppCompatActivity() {
             }
 
             val tvInfo = TextView(this).apply {
-                text = "Sensor: ${device.nombre}\nUbicación: ${device.ubicacion}\nMAC (AES Cifrada): ${device.macAddress}"
+                text = "Sensor: ${device.nombre}\nUbicación: ${device.ubicacion}\nMAC: ${device.macAddress}"
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                 setPadding(0, 0, 0, 12)
             }
@@ -212,12 +223,12 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
 
-            // Fila 1 de botones: Simular y Restablecer
+            // Fila 1 de botones: Simular y Restablecer (Siempre disponible para supervisión)
             val layoutBotonesAccion = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 weightSum = 2f
                 layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                    setMargins(0, 0, 0, 8)
+                    setMargins(0, 0, 0, if (puedeGestionar) 8 else 0)
                 }
             }
 
@@ -226,7 +237,7 @@ class DashboardActivity : AppCompatActivity() {
                 backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#D32F2F"))
                 setTextColor(Color.WHITE)
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    setMargins(0, 0, 8, 0)
+                    setMargins(0, 0, 4, 0)
                 }
                 setOnClickListener {
                     viewModel.cambiarEstadoDispositivo(device.id, device.nombre, true) {
@@ -240,7 +251,7 @@ class DashboardActivity : AppCompatActivity() {
                 backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#388E3C"))
                 setTextColor(Color.WHITE)
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    setMargins(8, 0, 0, 0)
+                    setMargins(4, 0, 0, 0)
                 }
                 setOnClickListener {
                     viewModel.cambiarEstadoDispositivo(device.id, device.nombre, false) {
@@ -252,54 +263,56 @@ class DashboardActivity : AppCompatActivity() {
             layoutBotonesAccion.addView(btnSimular)
             layoutBotonesAccion.addView(btnRestablecer)
 
-            // Fila 2 de botones: Editar y Eliminar
-            val layoutBotonesGestion = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                weightSum = 2f
-            }
-
-            val btnEditar = Button(this).apply {
-                text = "Editar"
-                backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#1976D2"))
-                setTextColor(Color.WHITE)
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    setMargins(0, 0, 8, 0)
-                }
-                setOnClickListener {
-                    mostrarDialogoEditarDispositivo(device)
-                }
-            }
-
-            val btnEliminar = Button(this).apply {
-                text = "Eliminar"
-                backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#616161"))
-                setTextColor(Color.WHITE)
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    setMargins(8, 0, 0, 0)
-                }
-                setOnClickListener {
-                    AlertDialog.Builder(this@DashboardActivity)
-                        .setTitle("Eliminar Dispositivo")
-                        .setMessage("¿Estás seguro de eliminar el sensor '${device.nombre}'?")
-                        .setPositiveButton("Sí, eliminar") { _, _ ->
-                            viewModel.eliminarDispositivoIoT(device.id) { exito ->
-                                if (exito) {
-                                    Toast.makeText(this@DashboardActivity, "Dispositivo eliminado", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                        .setNegativeButton("Cancelar", null)
-                        .show()
-                }
-            }
-
-            layoutBotonesGestion.addView(btnEditar)
-            layoutBotonesGestion.addView(btnEliminar)
-
             cardView.addView(tvInfo)
             cardView.addView(tvEstado)
             cardView.addView(layoutBotonesAccion)
-            cardView.addView(layoutBotonesGestion)
+
+            // Fila 2 de botones: Editar y Eliminar (Solo si puedeGestionar es true)
+            if (puedeGestionar) {
+                val layoutBotonesGestion = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    weightSum = 2f
+                }
+
+                val btnEditar = Button(this).apply {
+                    text = "Editar"
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#1976D2"))
+                    setTextColor(Color.WHITE)
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        setMargins(0, 0, 4, 0)
+                    }
+                    setOnClickListener {
+                        mostrarDialogoEditarDispositivo(device)
+                    }
+                }
+
+                val btnEliminar = Button(this).apply {
+                    text = "Eliminar"
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#616161"))
+                    setTextColor(Color.WHITE)
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        setMargins(4, 0, 0, 0)
+                    }
+                    setOnClickListener {
+                        AlertDialog.Builder(this@DashboardActivity)
+                            .setTitle("Eliminar Dispositivo")
+                            .setMessage("¿Estás seguro de eliminar el sensor '${device.nombre}'?")
+                            .setPositiveButton("Sí, eliminar") { _, _ ->
+                                viewModel.eliminarDispositivoIoT(device.id) { exito ->
+                                    if (exito) {
+                                        Toast.makeText(this@DashboardActivity, "Dispositivo eliminado", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            .setNegativeButton("Cancelar", null)
+                            .show()
+                    }
+                }
+
+                layoutBotonesGestion.addView(btnEditar)
+                layoutBotonesGestion.addView(btnEliminar)
+                cardView.addView(layoutBotonesGestion)
+            }
 
             contenedor.addView(cardView)
         }
@@ -448,7 +461,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun mostrarDialogoConfiguracion() {
-        viewModel.cargarConfiguracionDueño(viewModel.currentUid) { mostrarActual ->
+        viewModel.cargarConfiguracionCompleta(viewModel.currentUid) { mostrarActual, permitirActual ->
             val layout = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(50, 40, 50, 10)
@@ -466,15 +479,22 @@ class DashboardActivity : AppCompatActivity() {
                 isChecked = mostrarActual
             }
 
+            val switchGestion = CheckBox(this).apply {
+                text = "Permitir que invitados agreguen/editen/eliminen dispositivos"
+                isChecked = permitirActual
+            }
+
             layout.addView(tvEmail)
             layout.addView(switchCorreo)
+            layout.addView(switchGestion)
 
             AlertDialog.Builder(this)
                 .setTitle("Configuración de Usuario")
                 .setView(layout)
                 .setPositiveButton("Guardar") { _, _ ->
-                    val nuevoEstado = switchCorreo.isChecked
-                    viewModel.guardarConfiguracionDueño(nuevoEstado) { exito ->
+                    val nuevoCorreo = switchCorreo.isChecked
+                    val nuevaGestion = switchGestion.isChecked
+                    viewModel.guardarConfiguracionCompleta(nuevoCorreo, nuevaGestion) { exito ->
                         if (exito) {
                             Toast.makeText(this, "Configuración actualizada con éxito", Toast.LENGTH_SHORT).show()
                             recreate()
@@ -493,27 +513,27 @@ class DashboardActivity : AppCompatActivity() {
             val historial = viewModel.obtenerHistorialActual(mostrarCorreo)
             if (historial.isEmpty()) {
                 Toast.makeText(this, "No hay eventos registrados para este hogar", Toast.LENGTH_SHORT).show()
-            } else {
-                val mensaje = historial.joinToString(separator = "\n\n────────────────────────\n\n") { evento ->
-                    "Hogar: ${evento.hogar}\nZona: ${evento.zona}\nFecha: ${evento.timestamp}\nDetalle: ${evento.descripcion}"
-                }
-                AlertDialog.Builder(this)
-                    .setTitle("Historial de Eventos (${viewModel.getHomeTitle(mostrarCorreo)})")
-                    .setMessage(mensaje)
-                    .setPositiveButton("Cerrar", null)
-                    .setNeutralButton("Limpiar Historial") { _, _ ->
-                        AlertDialog.Builder(this)
-                            .setTitle("Confirmar")
-                            .setMessage("¿Deseas eliminar el historial de este hogar?")
-                            .setPositiveButton("Sí, limpiar") { _, _ ->
-                                viewModel.limpiarHistorialLocal(mostrarCorreo)
-                                Toast.makeText(this, "Historial borrado con éxito", Toast.LENGTH_SHORT).show()
-                            }
-                            .setNegativeButton("Cancelar", null)
-                            .show()
-                    }
-                    .show()
+                return@cargarConfiguracionDueño
             }
+            val mensaje = historial.joinToString(separator = "\n\n────────────────────────\n\n") { evento ->
+                "Hogar: ${evento.hogar}\nZona: ${evento.zona}\nFecha: ${evento.timestamp}\nDetalle: ${evento.descripcion}"
+            }
+            AlertDialog.Builder(this)
+                .setTitle("Historial de Eventos (${viewModel.getHomeTitle(mostrarCorreo)})")
+                .setMessage(mensaje)
+                .setPositiveButton("Cerrar", null)
+                .setNeutralButton("Limpiar Historial") { _, _ ->
+                    AlertDialog.Builder(this)
+                        .setTitle("Confirmar")
+                        .setMessage("¿Deseas eliminar el historial de este hogar?")
+                        .setPositiveButton("Sí, limpiar") { _, _ ->
+                            viewModel.limpiarHistorialLocal(mostrarCorreo)
+                            Toast.makeText(this, "Historial borrado con éxito", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                }
+                .show()
         }
     }
 
@@ -550,7 +570,6 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun verificarPermisoNotificaciones() {
-        // En Android 13+ solicitamos permiso de notificaciones
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
