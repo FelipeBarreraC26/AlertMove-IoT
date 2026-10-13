@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "889244831428",
+    "project_id": "mi-aplicacion-segura",
+    "storage_bucket": "mi-aplicacion-segura.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889244831428:android:3c37bec55bb03dc3c28391",
+        "android_client_info": {
+          "package_name": "com.example.miaplicacionsegura"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbbIUioGy0rdjio5qs_kNF87nAvdA-aUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

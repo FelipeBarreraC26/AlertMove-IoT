@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Cabecera con título y botón de menú -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvTituloPanel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Monitoreo IoT - Hogar Seguro"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Opciones ≡"
+                android:textColor="?attr/colorPrimary"
+                style="?attr/materialButtonOutlinedStyle" />
+        </LinearLayout>
+
+        <!-- Botón Registrar Nuevo Dispositivo IoT -->
+        <Button
+            android:id="@+id/btnRegistrarDispositivo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ Registrar Nuevo Dispositivo IoT"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Contenedor dinámico de dispositivos IoT -->
+        <LinearLayout
+            android:id="@+id/layoutContenedorDispositivos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Botón Cambiar de Vista (Mi Hogar / Hogar Compartido) -->
+        <Button
+            android:id="@+id/btnCambiarHogar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cambiar a Hogar Compartido"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <!-- Botón Desvincular Hogar Compartido -->
+        <Button
+            android:id="@+id/btnDesvincular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Desvincular Hogar Compartido"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            style="?attr/materialButtonOutlinedStyle" />
+
+    </LinearLayout>
+</ScrollView>
