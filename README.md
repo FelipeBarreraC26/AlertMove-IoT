@@ -203,7 +203,7 @@ Sigue estos pasos rápidos para clonar y ejecutar el proyecto en tu entorno de d
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/tu-usuario/AlertMove-IoT.git
+   git clone https://github.com/FelipeBarreraC26/AlertMove-IoT.git
    ```
 2. **Abrir el proyecto:**
    * Abre [Android Studio](https://developer.android.com/studio) y selecciona *Open an Existing Project*, eligiendo la carpeta clonada.
