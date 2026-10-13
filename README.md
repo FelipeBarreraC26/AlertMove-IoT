@@ -219,6 +219,7 @@ Sigue estos pasos rápidos para clonar y ejecutar el proyecto en tu entorno de d
 ## 📄 Licencia
 
 Este proyecto se encuentra distribuido bajo los términos de la licencia [MIT](LICENSE).
+
 ```
 
 
