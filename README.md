@@ -1,38 +1,5 @@
 
-###  Resumen de la App y Módulos Principales
-
-1. **Módulo de Autenticación (`MainActivity` & `RegisterActivity` + `AuthViewModel` + `AuthRepository`):**
-    * Gestiona el acceso seguro de usuarios con validación estricta de dominios permitidos (Gmail, Hotmail, Outlook) y complejidad de contraseñas.
-    * Incluye doble contraseña en el registro y persistencia de sesión automática (`Auto-Login` vía Firebase Auth y `onStart`), garantizando que el usuario nunca pierda su sesión ante reinicios o cierres de app.
-
-2. **Módulo del Panel de Control y Dispositivos (`DashboardActivity` + `DashboardViewModel` + `DeviceRepository`):**
-    * Pantalla principal responsiva con barra superior, menú hamburguesa (`≡`) y scroll adaptado a cualquier dispositivo.
-    * Permite registrar, editar y eliminar dispositivos IoT personalizados generando direcciones MAC aleatorias.
-    * **Cifrado AES de Hardware:** Las MAC address se encriptan simétricamente en el cliente antes de ser enviadas a Cloud Firestore mediante `CryptoUtils`.
-
-3. **Módulo de Seguridad Multiusuario y Compartida (`DashboardViewModel`):**
-    * Permite al propietario generar un **Token de Invitación** único.
-    * El invitado ingresa el token junto con la **contraseña del propietario** para vincular su dispositivo de forma segura.
-    * **Aislamiento total:** Las consultas y listeners están estrictamente filtrados por `ownerUid`, impidiendo filtraciones de alertas entre usuarios ajenos.
-    * **Configuración de Privacidad:** Permite al dueño decidir si muestra su correo real o una versión enmascarada (`ju***@gmail.com`) a sus invitados.
-
-4. **Módulo de Alertas en Segundo Plano y Arranque (`AlarmForegroundService` & `AlarmBootReceiver` + `NotificationHelper`):**
-    * **Foreground Service:** Mantiene la escucha en tiempo real de Firestore 24/7 incluso si la aplicación está completamente cerrada.
-    * **Boot Receiver:** Reactiva automáticamente el servicio de monitoreo en segundo plano tan pronto como el celular termina de encender o reiniciarse.
-    * **Notificaciones y Vibración:** Genera alertas hápticas de alta prioridad (`IMPORTANCE_HIGH`) y abre directamente el historial al tocar la notificación.
-
-5. **Módulo de Historial Local (`SecurityDatabaseHelper` & `HistoryRepository`):**
-    * Base de datos local SQLite (`seguridad_iot.db`) que almacena de forma offline las marcas de tiempo y eventos de seguridad.
-    * Segmentado por hogar (Muestra solo los eventos del panel activo actual) y con opción interactiva para limpiar el historial.
-
----
-
-# 📄 Archivo `README.md` para GitHub
-
-Puedes copiar y pegar el siguiente contenido directamente en un archivo llamado `README.md` en la raíz de tu repositorio:
-
-```markdown
-# 🚨 AlertMove IoT
+# AlertMove IoT
 
 > Sistema móvil avanzado de control de acceso y alerta temprana para entornos IoT sensibles, desarrollado de manera nativa en Android con Kotlin.
 
@@ -40,7 +7,7 @@ Puedes copiar y pegar el siguiente contenido directamente en un archivo llamado 
 
 ---
 
-## 🚀 Características Principales (Features)
+##  Características Principales (Features)
 
 - **Autenticación Segura y Cifrada:** Integración con Firebase Authentication con validación estricta de correos (Gmail/Hotmail/Outlook) y contraseñas robustas.
 - **Sesión Persistente y Auto-Login:** Mantenimiento de sesión activo ante reinicios de dispositivo y cierres forzosos de la aplicación.
@@ -54,7 +21,7 @@ Puedes copiar y pegar el siguiente contenido directamente en un archivo llamado 
 
 ---
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 - **Lenguaje:** [Kotlin](https://kotlinlang.org/)
 - **Interfaz de Usuario:** Android Views, Material Design 3, ConstraintLayout, ScrollView (Diseño 100% responsivo).
@@ -66,7 +33,7 @@ Puedes copiar y pegar el siguiente contenido directamente en un archivo llamado 
 
 ---
 
-## 📐 Arquitectura
+##  Arquitectura
 
 El proyecto sigue estrictamente el patrón arquitectónico **MVVM**, separando las responsabilidades en capas independientes para garantizar mantenibilidad, escalabilidad y facilidad de pruebas:
 
