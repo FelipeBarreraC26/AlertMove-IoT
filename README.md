@@ -6,7 +6,7 @@
     * Incluye doble contraseña en el registro y persistencia de sesión automática (`Auto-Login` vía Firebase Auth y `onStart`), garantizando que el usuario nunca pierda su sesión ante reinicios o cierres de app.
 
 2. **Módulo del Panel de Control y Dispositivos (`DashboardActivity` + `DashboardViewModel` + `DeviceRepository`):**
-    * Pantalla principal responsiva con barra superior, menú hamburguesa (`≡`) y scroll adaptado a cualquier dispositivo (incluyendo Poco F7).
+    * Pantalla principal responsiva con barra superior, menú hamburguesa (`≡`) y scroll adaptado a cualquier dispositivo.
     * Permite registrar, editar y eliminar dispositivos IoT personalizados generando direcciones MAC aleatorias.
     * **Cifrado AES de Hardware:** Las MAC address se encriptan simétricamente en el cliente antes de ser enviadas a Cloud Firestore mediante `CryptoUtils`.
 
